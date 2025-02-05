@@ -282,8 +282,10 @@ type CorsSetting struct {
 
 func CorsSettingsSchema() *pluginsdk.Schema {
 	return &pluginsdk.Schema{
-		Type:     pluginsdk.TypeList,
+		Type: pluginsdk.TypeList,
+		// NOTE: O+C Azure defaults `support_credentials` to false regardless of if `cors` is sent to the api which is causing perpetual diffs
 		Optional: true,
+		Computed: true,
 		MaxItems: 1,
 		Elem: &pluginsdk.Resource{
 			Schema: map[string]*pluginsdk.Schema{
@@ -338,14 +340,9 @@ func FlattenCorsSettings(input *webapps.CorsSettings) []CorsSetting {
 		return []CorsSetting{}
 	}
 
-	cors := *input
-	if len(pointer.From(cors.AllowedOrigins)) == 0 && !pointer.From(cors.SupportCredentials) {
-		return []CorsSetting{}
-	}
-
 	return []CorsSetting{{
-		SupportCredentials: pointer.From(cors.SupportCredentials),
-		AllowedOrigins:     pointer.From(cors.AllowedOrigins),
+		SupportCredentials: pointer.From(input.SupportCredentials),
+		AllowedOrigins:     pointer.From(input.AllowedOrigins),
 	}}
 }
 
